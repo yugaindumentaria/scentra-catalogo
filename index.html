@@ -27,9 +27,6 @@
     border-bottom:1px solid var(--gold);
     padding:28px 20px 22px;
     text-align:center;
-    position:sticky;
-    top:0;
-    z-index:50;
   }
   header .logo{
     display:block;
@@ -109,12 +106,12 @@
   }
   .reset-btn:hover{background:var(--gold); color:#000;}
   .grid{
-    max-width:1200px;
+    max-width:1300px;
     margin:0 auto;
     padding:10px 20px 60px;
     display:grid;
-    grid-template-columns:repeat(auto-fill, minmax(210px,1fr));
-    gap:18px;
+    grid-template-columns:repeat(auto-fill, minmax(260px,1fr));
+    gap:22px;
   }
   .card{
     background:var(--card);
@@ -166,7 +163,7 @@
     margin-bottom:2px;
   }
   .card-name{
-    font-size:15px;
+    font-size:17px;
     font-weight:600;
     color:var(--text);
     margin-bottom:6px;
@@ -188,12 +185,12 @@
   }
   .card-price{
     margin-top:auto;
-    font-size:17px;
+    font-size:19px;
     font-weight:700;
     color:var(--gold-light);
     margin-bottom:10px;
   }
-  .card-price.consult{font-size:14px; color:var(--text-dim); font-weight:600;}
+  .card-price.consult{font-size:15px; color:var(--text-dim); font-weight:600;}
   .wa-btn{
     display:flex;
     align-items:center;
@@ -224,10 +221,52 @@
   }
   footer .brand{color:var(--gold-light); letter-spacing:3px; font-size:13px; margin-bottom:6px; display:block;}
   @media (max-width:480px){
-    .grid{grid-template-columns:repeat(2,1fr); gap:10px; padding:10px 12px 40px;}
-    .card-name{font-size:13px;}
-    .card-price{font-size:15px;}
+    .grid{grid-template-columns:repeat(2,1fr); gap:12px; padding:10px 12px 40px;}
+    .card-name{font-size:14px;}
+    .card-price{font-size:16px;}
     header h1{letter-spacing:3px;}
+  }  .float-actions{
+    position:fixed;
+    right:18px;
+    bottom:22px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:12px;
+    z-index:100;
+  }
+  .float-btn{
+    width:52px;
+    height:52px;
+    border-radius:50%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    box-shadow:0 4px 14px rgba(0,0,0,.45);
+    cursor:pointer;
+    border:none;
+    text-decoration:none;
+  }
+  .float-btn.whatsapp{
+    background:var(--green);
+  }
+  .float-btn.whatsapp svg{width:28px; height:28px;}
+  .float-btn.top{
+    background:var(--gold);
+    opacity:0;
+    pointer-events:none;
+    transform:translateY(10px);
+    transition:opacity .25s ease, transform .25s ease;
+  }
+  .float-btn.top.show{
+    opacity:1;
+    pointer-events:auto;
+    transform:translateY(0);
+  }
+  .float-btn.top svg{width:24px; height:24px;}
+  @media (max-width:480px){
+    .float-actions{right:12px; bottom:16px; gap:10px;}
+    .float-btn{width:46px; height:46px;}
   }
 </style>
 </head>
@@ -269,6 +308,15 @@
   <span class="brand">SCENTRA FRAGANCIAS</span>
   Perfumería importada &middot; Consultas por WhatsApp
 </footer>
+
+<div class="float-actions">
+  <a class="float-btn whatsapp" id="waFloatBtn" href="#" target="_blank" rel="noopener" aria-label="Contactar por WhatsApp">
+    <svg viewBox="0 0 32 32" fill="#fff"><path d="M16.001 3C9.373 3 4 8.373 4 15c0 2.386.696 4.611 1.898 6.484L4 29l7.72-1.865A11.94 11.94 0 0 0 16.001 27C22.628 27 28 21.627 28 15S22.628 3 16.001 3zm0 21.75a9.7 9.7 0 0 1-4.95-1.354l-.355-.21-4.583 1.107 1.127-4.464-.232-.366A9.71 9.71 0 0 1 5.25 15c0-5.93 4.82-10.75 10.751-10.75S26.75 9.07 26.75 15 21.932 24.75 16.001 24.75zm5.55-7.98c-.304-.152-1.797-.887-2.076-.988-.279-.101-.482-.152-.685.152-.203.304-.786.988-.964 1.19-.177.203-.354.228-.658.076-.304-.152-1.283-.473-2.443-1.51-.903-.806-1.513-1.802-1.69-2.106-.177-.304-.019-.469.133-.62.137-.136.304-.354.456-.532.152-.177.203-.304.304-.507.101-.203.05-.38-.025-.532-.076-.152-.685-1.653-.939-2.263-.247-.594-.499-.514-.685-.523l-.583-.01c-.203 0-.532.076-.811.38-.279.304-1.064 1.04-1.064 2.54s1.089 2.947 1.241 3.15c.152.203 2.144 3.273 5.195 4.59.726.313 1.292.5 1.733.64.728.232 1.39.199 1.913.121.583-.087 1.797-.735 2.05-1.445.253-.71.253-1.318.177-1.445-.076-.127-.279-.203-.583-.355z"/></svg>
+  </a>
+  <button class="float-btn top" id="topBtn" aria-label="Volver al inicio">
+    <svg viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M18 15l-6-6-6 6"/></svg>
+  </button>
+</div>
 
 <script>
 // ======= CONFIGURACIÓN =======
@@ -383,6 +431,22 @@ resetBtn.addEventListener('click', ()=>{
 });
 
 render();
+
+// ======= BOTONES FLOTANTES =======
+const waFloatBtn = document.getElementById('waFloatBtn');
+waFloatBtn.href = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent('Hola, quisiera hacer una consulta sobre el catálogo de Scentra.')}`;
+
+const topBtn = document.getElementById('topBtn');
+window.addEventListener('scroll', ()=>{
+  if(window.scrollY > 400){
+    topBtn.classList.add('show');
+  }else{
+    topBtn.classList.remove('show');
+  }
+});
+topBtn.addEventListener('click', ()=>{
+  window.scrollTo({top:0, behavior:'smooth'});
+});
 </script>
 </body>
 </html>
