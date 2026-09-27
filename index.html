@@ -16,11 +16,13 @@
     --green:#25D366;
   }
   *{box-sizing:border-box; margin:0; padding:0;}
+  html{overflow-x:hidden;}
   body{
     background:var(--black);
     color:var(--text);
     font-family:'Segoe UI', Helvetica, Arial, sans-serif;
     min-height:100vh;
+    overflow-x:hidden;
   }
   header{
     background:linear-gradient(135deg, var(--black-soft) 0%, #000 100%);
@@ -120,11 +122,13 @@
     overflow:hidden;
     display:flex;
     flex-direction:column;
-    transition:transform .15s ease, border-color .15s ease;
+    transition:transform .25s cubic-bezier(.22,.61,.36,1), box-shadow .25s ease, border-color .25s ease;
+    cursor:pointer;
   }
   .card:hover{
-    transform:translateY(-3px);
+    transform:translateY(-6px);
     border-color:var(--gold);
+    box-shadow:0 14px 30px rgba(0,0,0,.5);
   }
   .card-img{
     width:100%;
@@ -139,7 +143,11 @@
   .card-img img{
     width:100%;
     height:100%;
-    object-fit:cover;
+    object-fit:contain;
+    transition:transform .3s cubic-bezier(.22,.61,.36,1);
+  }
+  .card:hover .card-img img{
+    transform:scale(1.08);
   }
   .no-photo{
     color:var(--text-dim);
@@ -268,6 +276,124 @@
     .float-actions{right:12px; bottom:16px; gap:10px;}
     .float-btn{width:46px; height:46px;}
   }
+
+  /* ===== MODAL DE PRODUCTO ===== */
+  .modal-overlay{
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,.72);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+    z-index:200;
+    opacity:0;
+    pointer-events:none;
+    transition:opacity .22s ease;
+  }
+  .modal-overlay.show{
+    opacity:1;
+    pointer-events:auto;
+  }
+  .modal-box{
+    background:var(--card);
+    border:1px solid var(--gold);
+    border-radius:14px;
+    max-width:420px;
+    width:100%;
+    max-height:88vh;
+    overflow-y:auto;
+    position:relative;
+    transform:scale(.94) translateY(10px);
+    transition:transform .22s cubic-bezier(.22,.61,.36,1);
+    box-shadow:0 20px 50px rgba(0,0,0,.6);
+  }
+  .modal-overlay.show .modal-box{
+    transform:scale(1) translateY(0);
+  }
+  .modal-close{
+    position:absolute;
+    top:10px;
+    right:10px;
+    width:36px;
+    height:36px;
+    border-radius:50%;
+    background:rgba(0,0,0,.55);
+    border:1px solid #3a3226;
+    color:var(--text);
+    font-size:20px;
+    line-height:1;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    cursor:pointer;
+    z-index:2;
+  }
+  .modal-close:hover{background:var(--gold); color:#000;}
+  .modal-img{
+    width:100%;
+    aspect-ratio:1/1;
+    background:#111;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    overflow:hidden;
+    border-radius:14px 14px 0 0;
+  }
+  .modal-img img{
+    width:100%;
+    height:100%;
+    object-fit:contain;
+  }
+  .modal-body{
+    padding:18px 20px 22px;
+  }
+  .modal-brand{
+    font-size:12px;
+    letter-spacing:1.5px;
+    text-transform:uppercase;
+    color:var(--gold-light);
+    margin-bottom:4px;
+  }
+  .modal-name{
+    font-size:22px;
+    font-weight:700;
+    color:var(--text);
+    margin-bottom:10px;
+    line-height:1.25;
+  }
+  .modal-tags{
+    display:flex;
+    gap:6px;
+    flex-wrap:wrap;
+    margin-bottom:14px;
+  }
+  .modal-price{
+    font-size:24px;
+    font-weight:700;
+    color:var(--gold-light);
+    margin-bottom:16px;
+  }
+  .modal-price.consult{font-size:16px; color:var(--text-dim); font-weight:600;}
+  .modal-wa-btn{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    background:var(--green);
+    color:#fff;
+    text-decoration:none;
+    padding:13px;
+    border-radius:8px;
+    font-size:15px;
+    font-weight:600;
+  }
+  .modal-wa-btn:hover{filter:brightness(1.08);}
+  @media (max-width:480px){
+    .modal-box{max-width:100%; margin:0 4px;}
+    .modal-name{font-size:19px;}
+    .modal-price{font-size:20px;}
+  }
 </style>
 </head>
 <body>
@@ -308,6 +434,20 @@
   <span class="brand">SCENTRA FRAGANCIAS</span>
   Perfumería importada &middot; Consultas por WhatsApp
 </footer>
+
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal-box" id="modalBox" role="dialog" aria-modal="true">
+    <button class="modal-close" id="modalClose" aria-label="Cerrar">&times;</button>
+    <div class="modal-img" id="modalImgWrap"></div>
+    <div class="modal-body">
+      <div class="modal-brand" id="modalBrand"></div>
+      <div class="modal-name" id="modalName"></div>
+      <div class="modal-tags" id="modalTags"></div>
+      <div class="modal-price" id="modalPrice"></div>
+      <a class="modal-wa-btn" id="modalWaBtn" href="#" target="_blank" rel="noopener">Consultar por WhatsApp</a>
+    </div>
+  </div>
+</div>
 
 <div class="float-actions">
   <a class="float-btn whatsapp" id="waFloatBtn" href="#" target="_blank" rel="noopener" aria-label="Contactar por WhatsApp">
@@ -388,6 +528,7 @@ function render(){
   list.forEach(p=>{
     const card = document.createElement('div');
     card.className = 'card';
+    card.dataset.id = p.id;
 
     const priceHtml = p.precio > 0
       ? `<div class="card-price">${money(p.precio)}</div>`
@@ -412,6 +553,10 @@ function render(){
         </a>
       </div>
     `;
+    card.addEventListener('click', (e)=>{
+      if(e.target.closest('.wa-btn')) return;
+      openModal(p);
+    });
     frag.appendChild(card);
   });
   grid.appendChild(frag);
@@ -446,6 +591,48 @@ window.addEventListener('scroll', ()=>{
 });
 topBtn.addEventListener('click', ()=>{
   window.scrollTo({top:0, behavior:'smooth'});
+});
+
+// ======= MODAL DE PRODUCTO =======
+const modalOverlay = document.getElementById('modalOverlay');
+const modalImgWrap = document.getElementById('modalImgWrap');
+const modalBrand = document.getElementById('modalBrand');
+const modalName = document.getElementById('modalName');
+const modalTags = document.getElementById('modalTags');
+const modalPrice = document.getElementById('modalPrice');
+const modalWaBtn = document.getElementById('modalWaBtn');
+const modalClose = document.getElementById('modalClose');
+
+function openModal(p){
+  modalImgWrap.innerHTML = p.img
+    ? `<img src="${p.img}" alt="${p.nombre}" onerror="this.parentElement.innerHTML='<div class=&quot;no-photo&quot;>Foto<br>pendiente</div>'">`
+    : `<div class="no-photo">Foto<br>pendiente</div>`;
+  modalBrand.textContent = p.marca;
+  modalName.textContent = p.nombre;
+  modalTags.innerHTML = `<span class="tag">${p.genero}</span><span class="tag">${p.presentacion}</span>`;
+  if(p.precio > 0){
+    modalPrice.textContent = money(p.precio);
+    modalPrice.className = 'modal-price';
+  }else{
+    modalPrice.textContent = 'Consultar precio';
+    modalPrice.className = 'modal-price consult';
+  }
+  modalWaBtn.href = waLink(p);
+  modalOverlay.classList.add('show');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal(){
+  modalOverlay.classList.remove('show');
+  document.body.style.overflow = '';
+}
+
+modalClose.addEventListener('click', closeModal);
+modalOverlay.addEventListener('click', (e)=>{
+  if(e.target === modalOverlay) closeModal();
+});
+document.addEventListener('keydown', (e)=>{
+  if(e.key === 'Escape' && modalOverlay.classList.contains('show')) closeModal();
 });
 </script>
 </body>
